@@ -1,0 +1,2 @@
+# AviUtl2_Discord_RPC
+Discordにプレイ中を表示させるAviUtl2のプラグイン
