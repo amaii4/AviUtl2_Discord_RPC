@@ -1,4 +1,4 @@
-﻿#include <windows.h>
+#include <windows.h>
 #include <vfw.h>
 #include <process.h>
 #include <string>
@@ -84,7 +84,6 @@ unsigned __stdcall MenuSetupThread(void* pArguments) {
 
 	UINT pfnameFlag = ispfname ? MF_CHECKED : MF_UNCHECKED;
 	AppendMenuW(hRpcMenu, MF_STRING | pfnameFlag, MENU_ID_SHOW_PFNAME, L"プロジェクト名を表示");
-	AppendMenuW(g_hViewMenu, MF_SEPARATOR, 0, NULL);
 	AppendMenuW(g_hViewMenu, MF_POPUP, (UINT_PTR)hRpcMenu, L"DiscordRPC");
 	g_pfnOriginalWndProc = (WNDPROC)SetWindowLongPtrW(g_hExEdit2, GWLP_WNDPROC, (LONG_PTR)RPCSetting);
 	InitDiscord();
