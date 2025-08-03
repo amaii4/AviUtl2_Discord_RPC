@@ -84,7 +84,7 @@ unsigned __stdcall MenuSetupThread(void* pArguments) {
 
 	UINT pfnameFlag = ispfname ? MF_CHECKED : MF_UNCHECKED;
 	AppendMenuW(hRpcMenu, MF_STRING | pfnameFlag, MENU_ID_SHOW_PFNAME, L"プロジェクト名を表示");
-	AppendMenuW(g_hViewMenu, MF_POPUP, (UINT_PTR)hRpcMenu, L"DiscordRPC");
+	AppendMenuW(g_hViewMenu, MF_POPUP, (UINT_PTR)hRpcMenu, L"DiscordRPCの設定");
 	g_pfnOriginalWndProc = (WNDPROC)SetWindowLongPtrW(g_hExEdit2, GWLP_WNDPROC, (LONG_PTR)RPCSetting);
 	InitDiscord();
 	Update();
@@ -216,3 +216,4 @@ LRESULT CALLBACK RPCSetting(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	}
 	return CallWindowProc(g_pfnOriginalWndProc, hWnd, uMsg, wParam, lParam);
 }
+
