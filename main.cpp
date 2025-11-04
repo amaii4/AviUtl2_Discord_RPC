@@ -1,10 +1,12 @@
 #include <windows.h>
+#include <commctrl.h>
 #include <vfw.h>
 #include <process.h>
 #include <string>
 #include <shlwapi.h>
 #include "discord_rpc.h"
-#include "input2.h"
+#include "plugin2.h"
+
 #pragma comment(lib, "vfw32.lib")
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "discord-rpc.lib")
@@ -64,45 +66,28 @@ std::string WcharToChar(const wchar_t* wide_str) {
 	result.resize(converted_size - 1);
 	return result;
 }
-
-unsigned __stdcall MenuSetupThread(void* pArguments) {
-
-	g_hExEdit2 = FindWindowW(L"aviutl2Manager", NULL); 
+unsigned __stdcall Add_PopupMenu(void* pArguments) {
+	g_hExEdit2 = FindWindowW(L"aviutl2Manager", NULL);
 	if (!g_hExEdit2) {
-		return 1;
 	}
 
 	HMENU hMenuBar = GetMenu(g_hExEdit2);
-	g_hViewMenu = GetSubMenu(hMenuBar, 3); 
+	g_hViewMenu = GetSubMenu(hMenuBar, 3);
 	if (!g_hViewMenu) {
-		return 1;
 	}
 	hRpcMenu = CreatePopupMenu();
 
 	UINT rpcFlag = isrpcenable ? MF_CHECKED : MF_UNCHECKED;
-	AppendMenuW(hRpcMenu, MF_STRING | rpcFlag, MENU_ID_ENABLE_RPC, L"RPCã‚’æœ‰åŠ¹åŒ–");
+	AppendMenuW(hRpcMenu, MF_STRING | rpcFlag, MENU_ID_ENABLE_RPC, L"RPC‚ð—LŒø‰»");
 
 	UINT pfnameFlag = ispfname ? MF_CHECKED : MF_UNCHECKED;
-	AppendMenuW(hRpcMenu, MF_STRING | pfnameFlag, MENU_ID_SHOW_PFNAME, L"ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆåã‚’è¡¨ç¤º");
-	AppendMenuW(g_hViewMenu, MF_POPUP, (UINT_PTR)hRpcMenu, L"DiscordRPCã®è¨­å®š");
+	AppendMenuW(hRpcMenu, MF_STRING | pfnameFlag, MENU_ID_SHOW_PFNAME, L"ƒvƒƒWƒFƒNƒg–¼‚ð•\Ž¦");
+	AppendMenuW(g_hViewMenu, MF_POPUP, (UINT_PTR)hRpcMenu, L"DiscordRPC‚ÌÝ’è");
 	g_pfnOriginalWndProc = (WNDPROC)SetWindowLongPtrW(g_hExEdit2, GWLP_WNDPROC, (LONG_PTR)RPCSetting);
 	InitDiscord();
 	Update();
-	return 0;
 }
 
-INPUT_PLUGIN_TABLE input_plugin_table = {
-	INPUT_PLUGIN_TABLE::FLAG_VIDEO | INPUT_PLUGIN_TABLE::FLAG_AUDIO,
-	L"DiscordRPC",
-	L"",
-	L"DiscordRPC",
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-};
 void InitDiscord()
 {
 	if (discordInitialized) {
@@ -115,14 +100,14 @@ void InitDiscord()
 }
 
 void UpdateDiscordPresence() {
-	
+
 	if (isrpcenable == true)
 	{
-		if(ispfname == false){
+		if (ispfname == false) {
 			InitDiscord();
 			DiscordRichPresence presence;
 			memset(&presence, 0, sizeof(presence));
-			presence.state = u8"ç·¨é›†ä¸­";
+			presence.state = u8"•ÒW’†";
 			presence.details = u8"";
 			presence.largeImageKey = "aviutl2";
 			presence.largeImageText = "AviUtl2";
@@ -134,7 +119,7 @@ void UpdateDiscordPresence() {
 			std::string pfNameS = WcharToChar(pfName);
 			DiscordRichPresence presence;
 			memset(&presence, 0, sizeof(presence));
-			presence.state = u8"ç·¨é›†ä¸­";
+			presence.state = u8"•ÒW’†";
 			presence.details = pfNameS.c_str();
 			presence.largeImageKey = "aviutl2";
 			presence.largeImageText = "AviUtl2";
@@ -148,39 +133,15 @@ void Update() {
 		Sleep(2000);
 	}
 }
-void func_init(void) {
-	_beginthreadex(NULL, 0, &MenuSetupThread, NULL, 0, NULL);
+
+EXTERN_C __declspec(dllexport) bool InitializePlugin(DWORD version) {
 	LoadSettings();
+	_beginthreadex(NULL, 0, &Add_PopupMenu, NULL, 0, NULL);
+	return true;
 }
 
-void func_exit(void) {
-	if (g_pfnOriginalWndProc && g_hExEdit2) {
-		SetWindowLongPtrW(g_hExEdit2, GWLP_WNDPROC, (LONG_PTR)g_pfnOriginalWndProc);
-	}
-	if (g_hViewMenu) {
-		RemoveMenu(g_hViewMenu, MENU_ID, MF_BYCOMMAND);
-		RemoveMenu(g_hViewMenu, GetMenuItemCount(g_hViewMenu) - 1, MF_BYPOSITION);
-	}
-}
-
-EXTERN_C __declspec(dllexport) INPUT_PLUGIN_TABLE* GetInputPluginTable(void)
-{
-	return &input_plugin_table;
-}
-
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
-	switch (fdwReason) {
-	case DLL_PROCESS_ATTACH:
-		hInstance = hinstDLL;
-		func_init();
-		break;
-	case DLL_PROCESS_DETACH:
-		if (lpvReserved != nullptr) break;
-		Discord_Shutdown();
-		func_exit();
-		break;
-	}
-	return TRUE;
+EXTERN_C __declspec(dllexport) void RegisterPlugin(HOST_APP_TABLE* host) {
+	host->set_plugin_information(L"DiscordRPC");
 }
 
 LRESULT CALLBACK RPCSetting(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -216,4 +177,3 @@ LRESULT CALLBACK RPCSetting(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	}
 	return CallWindowProc(g_pfnOriginalWndProc, hWnd, uMsg, wParam, lParam);
 }
-
