@@ -1,4 +1,4 @@
 # AviUtl2_Discord_RPC
 Discordにプレイ中を表示させるAviUtl2のプラグイン
 # インストール
-DiscordRPC.aui2をPluginフォルダに入れてください
+DiscordRPC.aux2をPluginフォルダに入れてください
